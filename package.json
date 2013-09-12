@@ -17,5 +17,10 @@
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/invernizzie/jquedit/issues"
+  },
+  "dependencies": {
+    "coffee-script": "~1.6.3",
+    "commander": "~2.0.0",
+    "jquery": "~1.8.3"
   }
 }
