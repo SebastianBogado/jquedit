@@ -11,8 +11,8 @@ jquery  = require 'jquery'
 coffee  = require 'coffee-script'
 
 program
-  .version('0.0.1')
-  .usage('[options] <full/path/to/script> <input file> <output file>')
+  .version('0.1.0')
+  .usage('[options] <script> <input file> <output file>')
   .parse(process.argv)
 
 userScript  = program.args.shift()
