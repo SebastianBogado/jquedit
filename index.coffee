@@ -10,6 +10,7 @@ fs      = require 'fs'
 jquery  = require 'jquery'
 coffee  = require 'coffee-script'
 repl    = require 'repl'
+jsdom = require 'jsdom'
 
 program
   .version('0.1.1')
@@ -51,12 +52,14 @@ fs.readFile input, (err, data) ->
     console.error 'Error reading input file.\n', err
     process.exit ERROR_READING_INPUT
 
-  $ = (jquery.create())(data.toString())
-
-  repl.start(
-    prompt: 'jQuedit> '
-    eval: evalFn
-  ).context.$ = $
-
+  jsdom.env
+    html: data.toString()
+    scripts: ['jquery.min.js']
+    done: (err, window) ->
+      # Start REPL
+      repl.start(
+        prompt: 'jQuedit> '
+        eval: evalFn
+      ).context.$ = window.jQuery
 
 
