@@ -1,6 +1,6 @@
 {
   "name": "jquedit",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "HTML editor that uses jQuery syntax.",
   "main": "index.js",
   "scripts": {
