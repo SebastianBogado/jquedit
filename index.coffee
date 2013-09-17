@@ -9,26 +9,41 @@ program = require 'commander'
 fs      = require 'fs'
 jquery  = require 'jquery'
 coffee  = require 'coffee-script'
+repl    = require 'repl'
 
 program
-  .version('0.1.0')
-  .usage('[options] <script> <input file> <output file>')
+  .version('0.1.1')
+  .usage('[options] <input file> <output file>')
   .parse(process.argv)
 
-userScript  = program.args.shift()
 input       = program.args.shift()
 output      = program.args.shift() or input
 
-if !userScript || !input || !output
+if !input || !output
   program.help()
 
-fs.readFile userScript, (err, data) ->
-  if err
-    console.error 'Error reading script.\n', err
+evalFn = (cmd, context, filename, callback) ->
+  return callback(null, cmd) if cmd is '(\n)'  # Horrible
 
   # Compiles to JS to later on add a wrapper function that receives the jQuery object
-  userScript = coffee.compile data.toString(), {bare: true}
-  userScript = "(function f ($) {#{userScript}})"
+  userScript = coffee.compile cmd, {bare: true}
+  userScript = "(function f ($) { return #{userScript}})"
+
+  try
+    eval(userScript)(context.$)
+    result = ''  # jQuery object is too verbose to have it as the result
+
+    fs.writeFile output, context.$[0].outerHTML, (err) ->
+      if err
+        console.error 'Error writing to output file.\n', err
+        process.exit ERROR_WRITING_OUTPUT
+
+  catch exception
+    result = 'Script error.\n' + exception
+
+
+  callback(null, result);
+
 
 
 fs.readFile input, (err, data) ->
@@ -38,16 +53,10 @@ fs.readFile input, (err, data) ->
 
   $ = (jquery.create())(data.toString())
 
-  try
-    eval(userScript)($)
+  repl.start(
+    prompt: 'jQuedit> '
+    eval: evalFn
+  ).context.$ = $
 
-  catch exception
-    console.log 'Script error.\n', exception
-    process.exit ERROR_SCRIPT_FAILED
-
-  fs.writeFile output, $[0].outerHTML, (err) ->
-    if err
-      console.error 'Error writing to output file.\n', err
-      process.exit ERROR_WRITING_OUTPUT
 
 
